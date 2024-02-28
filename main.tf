@@ -1,27 +1,25 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.0"
-    }
-  }
+variable "name" {
+  type        = string
+  description = "Name of the instance."
 }
 
-provider "aws" {
-  region = "eu-west-3"
+variable "instance_type" {
+  type        = string
+  description = "Instance types."
 }
 
-resource "aws_key_pair" "generated_key" {
-  key_name   = "PaulC-ssh"
-  public_key = file("~/.ssh/id_rsa.pub")
+provider "aws" {}
+
+module "ssh-module" {
+  source              = "./ssh-module"
+  name          = var.name
+  instance_type = var.instance_type
 }
 
+output "public_dns" {
+  value = module.ssh-module.public_dns
+}
 
-resource "aws_instance" "web" {
-  ami           = "ami-00575c0cbc20caf50"
-  instance_type = "t3.micro"
-  key_name      = aws_key_pair.generated_key.key_name
-  tags = {
-    Name = "PaulC"
-  }
+output "public_ip" {
+  value = module.ssh-module.public_ip
 }
